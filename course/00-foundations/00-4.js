@@ -1,8 +1,8 @@
 const user = {
   name: 'Анна',
   getName() {
-    return this.name
-  }
+    return this.name;
+  },
 };
 // 1. Вызов через объект: this === user
 
@@ -21,7 +21,8 @@ console.log(getName());
 // 3. Исправление через bind
 
 const boundGetName = user.getName.bind(user);
+
 console.log(boundGetName());
 
-// bind: он возвращает новую функцию с намертво привязанным this. 
+// bind: он возвращает новую функцию с намертво привязанным this.
 // Даже если её передать куда угодно
