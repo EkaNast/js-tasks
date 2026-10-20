@@ -1,0 +1,162 @@
+// ============================================
+// СЕЛЕКТОРЫ — получаем все нужные элементы из DOM
+// ============================================
+// Все элементы сохраняем в const, потому что переменные не переназначаются
+
+const emailInput = document.getElementById('email');        // поле Email
+const password1Input = document.getElementById('password1');  // поле "Пароль"
+const password2Input = document.getElementById('password2');  // поле "Повторите пароль"
+
+const toggleBtn = document.getElementById('toggle-password'); // кнопка "Показать/Скрыть"
+
+const agreeCheckbox = document.getElementById('agree');       // чекбокс согласия
+const emailError = document.getElementById('email-error');        // <p> для ошибки email
+const password1Error = document.getElementById('password1-error');// <p> для ошибки password1
+const password2Error = document.getElementById('password2-error');// <p> для ошибки password2
+
+const mismatchError = document.getElementById('mismatch');    // <p> для "пароли не совпадают"
+const statusEl = document.getElementById('status');           // <p> для статуса "Аккаунт создан"
+// ↑ назвали statusEl, а не status, чтобы не конфликтовать с window.status
+
+const form = document.querySelector('form');  // сама форма (нужна для submit)
+const submitBtn = document.getElementById('submit-btn');  // кнопка отправки (для блокировки)
+
+// ============================================
+// ШАГ 6.2: КНОПКА "ПОКАЗАТЬ/СКРЫТЬ" ПАРОЛЬ
+// ============================================
+toggleBtn.addEventListener('click', () => {
+  // Проверяем ТЕКУЩИЙ тип инпута (до изменения)
+  if (password1Input.type === 'password') {
+    // Пароль СКРЫТ → делаем ВИДНЫМ
+    password1Input.type = 'text';
+    toggleBtn.textContent = 'Скрыть';                              // меняем текст кнопки
+    toggleBtn.setAttribute('aria-pressed', 'true');                // кнопка "нажата"
+    toggleBtn.setAttribute('aria-label', 'Скрыть пароль');         // для скринридера
+  } else {
+    // Пароль ВИДЕН → делаем СКРЫТЫМ
+    password1Input.type = 'password';
+    toggleBtn.textContent = 'Показать';
+    toggleBtn.setAttribute('aria-pressed', 'false');
+    toggleBtn.setAttribute('aria-label', 'Показать пароль');
+  }
+});
+
+// ============================================
+// ШАГ 6.3: ПРОВЕРКА СОВПАДЕНИЯ ПАРОЛЕЙ
+// ============================================
+// Функция называется глаголом (comparePasswords)
+function comparePasswords() {
+  // Условие: пароли НЕ совпадают И оба поля НЕ пустые
+  // (пустые проверяем, чтобы не показывать ошибку до ввода)
+  if (
+    password1Input.value !== password2Input.value &&
+    password1Input.value !== '' &&
+    password2Input.value !== ''
+  ) {
+    // ОШИБКА: пароли разные
+    password2Input.setCustomValidity('Пароли не совпадают'); // задать ошибку
+    mismatchError.textContent = 'Пароли не совпадают';       // показать текст
+  } else {
+    // НЕТ ошибки: пароли совпадают или оба пустые
+    password2Input.setCustomValidity('');  // СНЯТЬ ошибку (пустая строка!)
+    mismatchError.textContent = '';         // очистить текст
+  }
+}
+
+// Вешаем на ОБА поля — чтобы при изменении любого из них проверка перезапускалась
+// (требование задания: "после исправления одного пароля повторно проверь совпадение")
+password1Input.addEventListener('input', comparePasswords);
+password2Input.addEventListener('input', comparePasswords);
+
+// ============================================
+// ШАГ 6.4 + УСЛОЖНЕНИЕ 7: ОТПРАВКА ФОРМЫ С ИМИТАЦИЕЙ ЗАПРОСА
+// ============================================
+form.addEventListener('submit', (event) => {
+  // 1. Предотвратить стандартную отправку (перезагрузку страницы)
+  event.preventDefault();
+
+  // 2. Собрать данные формы
+  const formData = new FormData(form);
+
+  // 3. Логируем ТОЛЬКО email и согласие (пароли НЕ логируем — безопасность!)
+  console.log('Email', formData.get('email'));
+  console.log('Согласие', formData.get('agree')); // 'on' если галочка стоит, null если нет
+
+  // 4. УСЛОЖНЕНИЕ: показываем статус "Отправка..."
+  statusEl.textContent = 'Отправка...';
+
+  // 5. УСЛОЖНЕНИЕ: блокируем кнопку, чтобы пользователь не отправил форму повторно
+  submitBtn.disabled = true;
+
+  // 6. УСЛОЖНЕНИЕ: имитация запроса к серверу через setTimeout
+  //    (в реальном коде тут был бы fetch() или XMLHttpRequest)
+  setTimeout(() => {
+    // Имитация ответа сервера: 50% шанс ошибки
+    const isError = Math.random() < 0.5;
+
+    if (isError) {
+      // ОШИБКА: показываем сообщение, поля НЕ очищаем (значения сохраняются)
+      statusEl.textContent = 'Ошибка: email уже занят';
+      // form.reset() НЕ вызываем — значения сохранятся
+    } else {
+      // УСПЕХ: показываем статус
+      statusEl.textContent = 'Аккаунт создан';
+      // Опционально: form.reset(); — очистить форму после успеха
+    }
+
+    // 7. УСЛОЖНЕНИЕ: разблокируем кнопку
+    submitBtn.disabled = false;
+  }, 2000);  // 2000 мс = 2 секунды
+});
+
+// ============================================
+// ШАГ 6.5: ОБРАБОТЧИКИ invalid — ПОКАЗ ОШИБОК
+// ============================================
+// Событие 'invalid' генерируется браузером когда поле не прошло нативную валидацию
+// (required, type=email, minlength). Стандартный bubble мы отменяем,
+// ошибку показываем в наш <p>.
+
+// Отдельный обработчик на каждое поле (можно было один через capture)
+
+emailInput.addEventListener('invalid', (event) => {
+  event.preventDefault();  // отменить стандартный bubble браузера
+  // validationMessage — это текст ошибки, который браузер сам генерирует на языке страницы
+  emailError.textContent = emailInput.validationMessage;
+  // Помечаем поле как невалидное для скринридеров
+  emailInput.setAttribute('aria-invalid', 'true');
+});
+
+password1Input.addEventListener('invalid', (event) => {
+  event.preventDefault();
+  password1Error.textContent = password1Input.validationMessage;
+  password1Input.setAttribute('aria-invalid', 'true');
+});
+
+password2Input.addEventListener('invalid', (event) => {
+  event.preventDefault();
+  password2Error.textContent = password2Input.validationMessage;
+  password2Input.setAttribute('aria-invalid', 'true');
+});
+
+// ============================================
+// ШАГ 6.6: СБРОС ОШИБОК ПРИ ИСПРАВЛЕНИИ ПОЛЯ
+// ============================================
+// Когда пользователь начал печатать заново — старая ошибка должна исчезнуть,
+// иначе она останется на экране и будет мешать.
+// Эти обработчики работают ВМЕСТЕ с comparePasswords (несколько обработчиков
+// на одно событие — это ок, они выполняются поочерёдно).
+
+emailInput.addEventListener('input', () => {
+  emailError.textContent = '';                              // очищаем текст ошибки
+  emailInput.setAttribute('aria-invalid', 'false');         // снимаем aria-invalid
+});
+
+password1Input.addEventListener('input', () => {
+  password1Error.textContent = '';
+  password1Input.setAttribute('aria-invalid', 'false');
+});
+
+password2Input.addEventListener('input', () => {
+  password2Error.textContent = '';
+  password2Input.setAttribute('aria-invalid', 'false');
+});

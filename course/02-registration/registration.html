@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="../02-registration/registration.css" />
+    <title>Создать аккаунт</title>
+    <script src="../02-registration/registration.js" defer></script>
+  </head>
+
+  <body>
+    <main>
+      <form action="" method="post">
+        <h1>Создать аккаунт</h1>
+
+        <label for="email">Email:</label>
+        <input
+          type="email"
+          name="email"
+          autocomplete="email"
+          id="email"
+          aria-describedby="email-error"
+          required
+        />
+        <p id="email-error"></p>
+
+        <label class="input-label">
+          <span class="input-title">Пароль:</span>
+          <input
+            class="input"
+            type="password"
+            autocomplete="new-password"
+            name="one-line-password1"
+            minlength="8"
+            id="password1"
+            aria-describedby="password1-error hint"
+            required
+          />
+          <button
+            type="button"
+            id="toggle-password"
+            aria-pressed="false"
+            aria-label="Показать пароль"
+          >
+            Показать
+          </button>
+        </label>
+
+        <p id="password1-error"></p>
+        <p id="hint">Не менее 8 символов</p>
+
+        <label class="input-label">
+          <span class="input-title">Повторите пароль:</span>
+          <input
+            class="input"
+            type="password"
+            autocomplete="new-password"
+            name="one-line-password2"
+            minlength="8"
+            id="password2"
+            aria-describedby="password2-error mismatch"
+            required
+          />
+        </label>
+        <p id="password2-error"></p>
+        <p id="mismatch"></p>
+
+        <label> <input type="checkbox" name="agree" id="agree" required />Я принимаю условия</label>
+
+        <button type="submit" id="submit-btn">Создать аккаунт</button>
+        <p id="status" aria-live="polite" role="status"></p>
+      </form>
+    </main>
+  </body>
+</html>
